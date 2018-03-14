@@ -295,6 +295,21 @@ pub mod util {
         pemfile::certs(&mut reader).map_err(|_| Error::BadCerts)
     }
 
+    pub fn load_certs_directory<P: AsRef<Path>>(path: P) -> Result<Vec<rustls::Certificate>> {
+        use std::fs::OpenOptions;
+        let mut cert_vec: Vec<rustls::Certificate> = Vec::new();
+        let cert_dir = fs::read_dir(path.as_ref()).map_err(|e| Error::Io(e))?;
+        for dir_entry in cert_dir {
+            let mut cert_file = OpenOptions::new().read(true).open(dir_entry.unwrap().path().as_path()).unwrap();
+            let mut reader = BufReader::new(cert_file);
+            match pemfile::certs(&mut reader) {
+                Ok(mut vec) => cert_vec.append(&mut vec),
+                Err(_) => (),
+            };
+        }
+        Ok(cert_vec)
+    }
+
     pub fn load_private_key<P: AsRef<Path>>(path: P) -> Result<rustls::PrivateKey> {
         use std::io::Seek;
         use std::io::BufRead;

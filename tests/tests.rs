@@ -59,3 +59,10 @@ fn load_rsa_key_format() {
     //  openssl rsa -in tests/pkcs8.pem -out tests/rsa.pem
     assert!(hyper_sync_rustls::util::load_private_key("tests/rsa.pem").is_ok());
 }
+
+#[test]
+fn load_certs_directory() {
+    let vec = hyper_sync_rustls::util::load_certs_directory("tests/CAs");
+    assert!(vec.is_ok());
+    assert!(vec.unwrap().len() == 3);
+}
