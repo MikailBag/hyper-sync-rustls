@@ -210,8 +210,8 @@ pub struct TlsServer {
 
 #[cfg(feature = "server")]
 impl TlsServer {
-    pub fn new(certs: Vec<rustls::Certificate>, key: rustls::PrivateKey) -> TlsServer {
-        let client_auth = rustls::NoClientAuth::new();
+    pub fn new(certs: Vec<rustls::Certificate>, key: rustls::PrivateKey, client_certs: rustls::RootCertStore) -> TlsServer {
+        let client_auth = rustls::AllowAnyAuthenticatedClient::new(client_certs);
         let mut tls_config = rustls::ServerConfig::new(client_auth);
         let cache = rustls::ServerSessionMemoryCache::new(1024);
         tls_config.set_persistence(cache);
@@ -308,6 +308,14 @@ pub mod util {
             };
         }
         Ok(cert_vec)
+    }
+
+    pub fn root_cert_store_from_certs(certs_vector: Vec<rustls::Certificate>) -> rustls::RootCertStore {
+        let mut root_cert_store = rustls::RootCertStore::empty();
+        for cert in certs_vector {
+            root_cert_store.add(&cert).expect("Certificate could not be added to RootCertStore.");
+        }
+        root_cert_store
     }
 
     pub fn load_private_key<P: AsRef<Path>>(path: P) -> Result<rustls::PrivateKey> {

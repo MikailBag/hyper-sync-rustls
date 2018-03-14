@@ -66,3 +66,10 @@ fn load_certs_directory() {
     assert!(vec.is_ok());
     assert!(vec.unwrap().len() == 3);
 }
+
+#[test]
+fn generate_root_cert_store() {
+    let vec = hyper_sync_rustls::util::load_certs_directory("tests/CAs");
+    let root_cert_store = hyper_sync_rustls::util::root_cert_store_from_certs(vec.unwrap());
+    assert!(root_cert_store.len() == 3);
+}
