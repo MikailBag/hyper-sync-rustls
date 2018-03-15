@@ -210,8 +210,12 @@ pub struct TlsServer {
 
 #[cfg(feature = "server")]
 impl TlsServer {
-    pub fn new(certs: Vec<rustls::Certificate>, key: rustls::PrivateKey, client_certs: rustls::RootCertStore) -> TlsServer {
-        let client_auth = rustls::AllowAnyAuthenticatedClient::new(client_certs);
+    pub fn new(certs: Vec<rustls::Certificate>, key: rustls::PrivateKey, client_certs: Option<rustls::RootCertStore>) -> TlsServer {
+        let client_auth = match client_certs {
+            Some(val) => rustls::AllowAnyAuthenticatedClient::new(val),
+            None => rustls::NoClientAuth::new(),
+        };
+        //let client_auth = rustls::AllowAnyAuthenticatedClient::new(client_certs);
         let mut tls_config = rustls::ServerConfig::new(client_auth);
         let cache = rustls::ServerSessionMemoryCache::new(1024);
         tls_config.set_persistence(cache);
